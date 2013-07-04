@@ -3,156 +3,89 @@ UHMAILER
 
 	<?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
-	require_once(APPPATH . 'libraries/phpmailer/class.phpmailer.php');
-
-	class Uhmailer
+	class SendmailController extends UH_Controller
 	{
 
-		private $CI = null;
-		private $mail = null;
-		private $INI = array();
+	    protected $data = array();
 
-		public function __construct()
-		{
-			$this->CI =& get_instance();
-
-	        $this->initialize();
-		}
-
-	    public function initialize()
+	    public function __construct()
 	    {
-	        $this->INI['sitename']          = 'Site Name';
-	        $this->INI['site-email-from']   = 'From Name';
-	        $this->INI['site-email']        = 'from@email.com';
-	        $this->INI['site-email-reply']  = 'replyto@email.com';
-
-	        $this->INI['mailserver-host']   = 'smtp.host.com';
-	        $this->INI['mailserver-port']   = '465';
-	        $this->INI['mailserver-login']  = 'login@smtp.com';
-	        $this->INI['mailserver-pass']   = '**************';
-
-	        $this->mail = new PHPMailer();
-	        $this->mail->SetLanguage('br');
-	        $this->mail->IsSMTP();
-	        $this->mail->SMTPSecure = 'ssl';
-	        $this->mail->CharSet = 'utf-8';
-	        $this->mail->ContentType = 'text/html';
-	        $this->mail->WordWrap = 100;
-	        $this->mail->SMTPDebug  = 1;
-
-	        $this->mail->Mailer   = "smtp";
-	        $this->mail->SMTPAuth = true;
-	        $this->mail->Host     = $this->INI['mailserver-host'];
-	        $this->mail->Username = $this->INI['mailserver-login'];
-	        $this->mail->Password = $this->INI['mailserver-pass'];
-	        $this->mail->Port     = $this->INI['mailserver-port'];
+	        parent::__construct();
 	    }
 
-	    public function from($fromEmail = '', $fromName = '')
+	    public function index()
 	    {
-	        $this->mail->From = $fromEmail;
-	        $this->mail->FromName = $fromName;
-	    }
+	        // Load da classe uhmailer
+	        $this->load->library('uhmailer');
 
-	    public function addCc($ccEmail = '', $ccName = '')
-	    {
-	        if (is_array($ccEmail)) {
+	        // A primeira coisa a se fazer é configurar a library.
+	        // Abra o arquivo /uh_app/libraries/uhmailer.php e altere as configurações de SMTP.
 
-	            foreach ($ccEmail as $email) {
+	        // Variável com a mensagem a ser enviada.
+	        $message = '
+	            <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.</p>
+	            <p>Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo.</p>
+	            <p>Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus.</p>
+	            <p>Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus.</p>
+	            <p>Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem. Maecenas nec odio et ante tincidunt tempus. Donec vitae sapien ut libero venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt. Duis leo. Sed fringilla mauris sit amet nibh. Donec sodales sagittis magna. Sed consequat, leo eget bibendum sodales, augue velit cursus nunc,</p>
+	        ';
 
-	                $this->mail->AddCC($email);
+	        // Ou você pode carregar uma view como string;
+	        // O terceiro parâmetro como TRUE faz a view ser retornada como string ao invés de ir para o output.
+	        // $message = $this->load->view('email-default', $this->data, true);
 
-	            }
 
-	        } else {
 
-	            $this->mail->AddCC($ccEmail, $ccName);
+	        /**
+	         *  OPCIONAL:
+	         *  Adicionar From (Remetente) diferente do padrão
+	         */
+	        $this->uhmailer->from('email@from.com.br', 'Nome do Remetente');
+	        //
 
-	        }
-	    }
 
-	    public function addbcc($bccEmail = '', $bccName = '')
-	    {
-	        if (is_array($bccEmail)) {
+	        /**
+	         *  OPCIONAL
+	         *  Adicionar destinatário em Cópia
+	         */
+	        $this->uhmailer->addCc('destinatario@em.copia.com.br', 'Nome do Destinatário');
+	        // Ou para vários destinatários
+	        $this->uhmailer->addCc(array('destinatario.1@em.copia.com.br', 'destinatario.2@em.copia.com.br', 'destinatario.3@em.copia.com.br'));
+	        //
 
-	            foreach ($bccEmail as $email) {
 
-	                $this->mail->AddBCC($email);
+	        /**
+	         *  OPCIONAL
+	         *  Adicionar destinatário em Cópia Oculta
+	         */
+	        $this->uhmailer->addbcc('destinatario@em.copia.oculta.com.br', 'Nome do Destinatário');
+	        // Ou para vários destinatários
+	        $this->uhmailer->addbcc(array('destinatario.1@em.copia.oculta.com.br', 'destinatario.2@em.copia.oculta.com.br', 'destinatario.3@em.copia.oculta.com.br'));
+	        //
 
-	            }
 
-	        } else {
+	        // Destinaário pode ser apenas 1 (um) como string
+	        // Ou pode ser um array de destinatários
+	        // $destinatario = array('destinatario.1@email.com.br', 'destinatario.2@email.com.br', 'destinatario.3@email.com.br');
+	        $destinatario = 'destinatario@email.com.br';
 
-	            $this->mail->AddBCC($bccEmail, $bccName);
+	        $assunto = 'Assunto da Mensagem';
 
-	        }
-	    }
+	        $replyto = 'responder-para@opcional.com.br';
 
-		public function send($email_to, $subject, $message, $replyto = null)
-	    {
-	        $message = $this->getTemplate($message);
+	        // Chama o método de envio de email.
+	        // O quarto parâmetro "responder-para" é um email para resposta. É opcional, pode simplesmente omitir e a classe vai assumir o remetente como reply-to.
+	        $this->uhmailer->send($destinatario, $assunto, $message, $replyto);
 
-	        $this->mail->Body = $message;
 
-	        $this->setHeader($email_to, $replyto);
-	        $this->setSubject($subject);
-	        $this->sendEmail();
-	    }
+	        // Depois em produção lembre-se de desabilitar o Debug na library uhmailer.php
+	        // Para isso, comente as seguintes linhas no código:
+	        
+	        // $this->mail->SMTPDebug  = 1;
+	        
+	        // echo $this->mail->ErrorInfo;
+	        // exit;
 
-	    private function sendEmail()
-	    {
-	        if (!$this->mail->Send()) {
-
-	            echo $this->mail->ErrorInfo;
-	            exit;
-
-	        }
-
-	        unset($this->mail);
-
-	        $this->initialize();
-	    }
-
-	    private function setHeader($to = null, $reply = null)
-	    {
-	        $to = $to ? $to : $this->INI['site-email-reply'];
-	        $reply = $reply ? $reply : $this->INI['site-email-reply'];
-
-	        if (!$this->mail->From)
-	            $this->INI['site-email'];
-
-	        if ($this->mail->FromName)
-	            $this->INI['site-email-from'];
-
-	        $this->mail->AddReplyTo($reply);
-
-	        if (is_array($to)) {
-
-	            foreach ($to as $t) {
-
-	                $this->mail->AddAddress($t);
-
-	            }
-
-	        } else {
-
-	            $this->mail->AddAddress($to);
-
-	        }
-
-	    }
-
-	    private function setSubject($subject)
-	    {
-	        $this->mail->Subject = $subject . ' - ' . $this->INI['sitename'];
-	    }
-
-	    private function getTemplate($message)
-	    {
-	        return $message;
-
-	        // $data = array('body' => $message, 'sitename' => $this->INI['sitename']);
-	        // return $this->load->view('default-email', $data, true);
 	    }
 
 	}
